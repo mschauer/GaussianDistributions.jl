@@ -36,7 +36,7 @@ _symmetric(J::UniformScaling) = J
 """
     Gaussian(μ, Σ) -> P
 
-Gaussian distribution with mean `μ`` and covariance `Σ`. Defines `rand(P)` and `(log-)pdf(P, x)`.
+Gaussian distribution with mean `μ` and covariance `Σ`. Defines `rand(P)` and `(log-)pdf(P, x)`.
 Designed to work with `Number`s, `UniformScaling`s, `StaticArrays` and `PSD`-matrices.
 
 Implementation details: On `Σ` the functions `logdet`, `whiten` and `unwhiten`
@@ -57,10 +57,29 @@ sqmahal(P::Gaussian, x) = norm_sqr(whiten(P.Σ,x - P.μ))
 
 rand(P::Gaussian) = P.μ + chol(P.Σ)'*randn(typeof(P.μ))
 rand(P::Gaussian{Vector}) = P.μ + chol(P.Σ)'*randn(T, length(P.μ))
+rand(RNG, P::Gaussian) = P.μ + chol(P.Σ)'*randn(RNG, typeof(P.μ))
+rand(RNG, P::Gaussian{Vector}) = P.μ + chol(P.Σ)'*randn(RNG, T, length(P.μ))
 
 logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi))/2    
 pdf(P::Gaussian, x) = exp(logpdf(P::Gaussian, x))
 cdf(P::Gaussian{Float64,Float64}, x) = Distributions.normcdf(P.μ, sqrt(P.\Sigma), x)
+
+function rand(RNG, P::Gaussian{T}, dims) where {T}
+    X = zeros(T, dims)
+    for i in 1:length(X)
+        X[i] = rand(RNG, P)
+    end
+    X
+end
+
+function rand(P::Gaussian{T}, dims) where {T}
+    X = zeros(T, dims)
+    for i in 1:length(X)
+        X[i] = rand(P)
+    end
+    X
+end
+
 
 """
     logpdfnormal(x, Σ) 

@@ -39,3 +39,14 @@ for d in 1: 3
     @test pdf(Gaussian(SVector{d}(μ), SDiagonal(σ^2*ones(SVector{d}))), x) ≈ p
     @test pdf(Gaussian(SVector{d}(μ), SMatrix{d,d}(Σ)), x) ≈ p
 end
+
+@test rand(Base.Random.GLOBAL_RNG, Gaussian(1.0, 0.0)) == 1.0
+
+@test rand(Gaussian(1.0,0.0)) == 1.0
+srand(5)
+x = randn()
+srand(5)
+@test rand(Gaussian(1.0,2.0)) == 1.0 + sqrt(2)*x
+
+srand(5)
+@test rand(Gaussian(1.0,2.0), (1,)) == [1.0 + sqrt(2)*x]
