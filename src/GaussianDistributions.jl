@@ -4,7 +4,7 @@ module GaussianDistributions
 using Distributions
 using Base.LinAlg: norm_sqr
 
-import Base: rand
+import Base: rand, mean, cov, var
 import Distributions: pdf, logpdf, sqmahal, cdf, quantile
 import Base: chol, size
 
@@ -48,7 +48,10 @@ struct Gaussian{T,S}
     Gaussian(μ::T, Σ::S) where {T,S} = new{T,S}(μ, Σ)
 end
 Gaussian() = Gaussian(0.0, 1.0)
-
+mean(P::Gaussian) = P.μ
+cov(P::Gaussian) = P.Σ
+var(P::Gaussian{<:Real}) = P.Σ
+     
 dim(P::Gaussian) = length(P.μ)
 whiten(Σ::PSD, z) = Σ.σ\z
 whiten(Σ, z) = chol(Σ)'\z
