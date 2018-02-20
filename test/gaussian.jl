@@ -41,6 +41,7 @@ for d in 1: 3
 end
 
 @test rand(Base.Random.GLOBAL_RNG, Gaussian(1.0, 0.0)) == 1.0
+@test mean(rand(MersenneTwister(1), Gaussian([1., 2], eye(2)), 100000)) ≈ 1.5 atol=0.02
 
 @test rand(Gaussian(1.0,0.0)) == 1.0
 srand(5)
