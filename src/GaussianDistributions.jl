@@ -59,10 +59,10 @@ whiten(Σ::UniformScaling, z) = z/sqrt(Σ.λ)
 sqmahal(P::Gaussian, x) = norm_sqr(whiten(P.Σ,x - P.μ))
 
 rand(P::Gaussian) = P.μ + chol(P.Σ)'*randn(typeof(P.μ))
-rand(P::Gaussian{V}) where V<:AbstractVector{T} where T =
+rand(P::Gaussian{Vector{T}}) where T =
     P.μ + chol(P.Σ)'*randn(T, length(P.μ))
 rand(RNG, P::Gaussian) = P.μ + chol(P.Σ)'*randn(RNG, typeof(P.μ))
-rand(RNG, P::Gaussian{V}) where V<:AbstractVector{T} where T =
+rand(RNG, P::Gaussian{Vector{T}}) where T =
     P.μ + chol(P.Σ)'*randn(RNG, T, length(P.μ))
 
 logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi))/2    
@@ -77,7 +77,7 @@ function rand(RNG, P::Gaussian{T}, dims) where {T}
     X
 end
 
-function rand(RNG, P::Gaussian{V}, dims) where V<:AbstractVector{T} where {T}
+function rand(RNG, P::Gaussian{Vector{T}}, dims) where {T}
     X = zeros(T, dim(P), dims...)
     for i in 1:prod(dims)
         X[:, i] = rand(RNG, P)
