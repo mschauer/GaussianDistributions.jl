@@ -22,9 +22,14 @@ type PSD{T}
 end
 chol(P::PSD) = P.σ' 
 
-sumlogdiag(Σ::Float64, d=1) = log(Σ)
-sumlogdiag(Σ,d) = sum(log.(diag(Σ)))
-sumlogdiag(J::UniformScaling, d)= log(J.λ)*d
+"""
+Sum of the log of the diagonal elements. Second argument `d` is used
+to handle `UniformScaling` and other linear operators whose dimensions
+are determined by the dimension of the argument they work on.
+"""
+sumlogdiag(Σ::Float64, _) = log(Σ)
+sumlogdiag(Σ, d) = sum(log.(diag(Σ)))
+sumlogdiag(J::UniformScaling, d) = log(J.λ)*d
 
 _logdet(Σ::PSD, d) = 2*sumlogdiag(Σ.σ, d)
 
@@ -57,7 +62,7 @@ dim(P::Gaussian) = length(P.μ)
 whiten(Σ::PSD, z) = Σ.σ\z
 whiten(Σ, z) = chol(Σ)'\z
 whiten(Σ::UniformScaling, z) = z/sqrt(Σ.λ)
-sqmahal(P::Gaussian, x) = norm_sqr(whiten(P.Σ,x - P.μ))
+sqmahal(P::Gaussian, x) = norm_sqr(whiten(P.Σ, x - P.μ))
 
 rand(P::Gaussian) = P.μ + chol(P.Σ)'*randn(typeof(P.μ))
 rand(P::Gaussian{Vector{T}}) where T =
@@ -68,7 +73,7 @@ rand(RNG, P::Gaussian{Vector{T}}) where T =
 
 logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi))/2    
 pdf(P::Gaussian, x) = exp(logpdf(P::Gaussian, x))
-cdf(P::Gaussian{Float64,Float64}, x) = Distributions.normcdf(P.μ, sqrt(P.\Sigma), x)
+cdf(P::Gaussian{Float64,Float64}, x) = Distributions.normcdf(P.μ, sqrt(P.Σ), x)
 
 function rand(RNG, P::Gaussian{T}, dims) where {T}
     X = zeros(T, dims)
@@ -91,7 +96,7 @@ rand(P::Gaussian, dims) = rand(Base.GLOBAL_RNG, P, dims)
 """
     logpdfnormal(x, Σ) 
 
-logpdf of centered Gaussian with covariance Σ
+Logarithm of the probability density function of centered Gaussian with covariance Σ
 """
 function logpdfnormal(x, Σ) 
 
@@ -104,8 +109,13 @@ function logpdfnormal(x::Float64, Σ)
      -(x^2/Σ + log(Σ) + log(2pi))/2
 end
 
+"""
+    conditional(P::Gaussian, A, B, xB)  
+
+Conditional distribution of `X[i for i in A]` given 
+`X[i for i in B] == xB` if ``X ~ P``.
+"""
 function conditional(P::Gaussian, A, B, xB)
-    assert(length(b) == length(xB))   
     Z = P.Σ[A,B]*inv(P.Σ[B,B]) 
     Gaussian(P.μ[A] + Z*(xB - P.μ[B]), P.Σ[A,A] - Z*P.Σ[B,A])
 end    
