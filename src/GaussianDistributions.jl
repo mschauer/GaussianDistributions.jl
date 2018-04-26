@@ -58,6 +58,8 @@ Gaussian() = Gaussian(0.0, 1.0)
 mean(P::Gaussian) = P.μ
 cov(P::Gaussian) = P.Σ
 var(P::Gaussian{<:Real}) = P.Σ
+Base.convert(::Type{Gaussian{T, S}}, g::Gaussian) where {T, S} =
+    Gaussian(convert(T, g.μ), convert(S, g.Σ))
      
 dim(P::Gaussian) = length(P.μ)
 whiten(Σ::PSD, z) = Σ.σ\z
