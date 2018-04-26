@@ -53,6 +53,7 @@ struct Gaussian{T,S}
     Σ::S
     Gaussian(μ::T, Σ::S) where {T,S} = new{T,S}(μ, Σ)
 end
+Base.:(==)(g1::Gaussian, g2::Gaussian) = g1.μ == g2.μ && g1.Σ == g2.Σ
 Gaussian() = Gaussian(0.0, 1.0)
 mean(P::Gaussian) = P.μ
 cov(P::Gaussian) = P.Σ
@@ -74,6 +75,11 @@ rand(RNG, P::Gaussian{Vector{T}}) where T =
 logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi))/2    
 pdf(P::Gaussian, x) = exp(logpdf(P::Gaussian, x))
 cdf(P::Gaussian{Float64,Float64}, x) = Distributions.normcdf(P.μ, sqrt(P.Σ), x)
+
+Base.:+(g::Gaussian, vec) = Gaussian(g.μ + vec, g.Σ)
+Base.:+(vec, g::Gaussian) = g + vec
+Base.:-(g::Gaussian, vec) = g + (-vec)
+Base.:*(M, g::Gaussian) = Gaussian(M * g.μ, M * g.Σ * M')
 
 function rand(RNG, P::Gaussian{T}, dims) where {T}
     X = zeros(T, dims)

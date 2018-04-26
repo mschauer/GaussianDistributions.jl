@@ -51,3 +51,10 @@ srand(5)
 
 srand(5)
 @test rand(Gaussian(1.0,2.0), (1,)) == [1.0 + sqrt(2)*x]
+
+g = Gaussian([1,2], eye(2))
+@test mean(g + 10) == [11,12]
+@test g - 10 + 10 == g
+@test mean(g + [10, 20]) == [11,22]
+m = [1.0 2.0; 0.0 2.0]
+@test cov(m * g) == m * m'
