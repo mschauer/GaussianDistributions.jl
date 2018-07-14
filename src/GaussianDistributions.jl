@@ -76,7 +76,7 @@ rand(RNG, P::Gaussian{Vector{T}}) where T =
 
 logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi))/2    
 pdf(P::Gaussian, x) = exp(logpdf(P::Gaussian, x))
-cdf(P::Gaussian{Float64,Float64}, x) = Distributions.normcdf(P.μ, sqrt(P.Σ), x)
+cdf(P::Gaussian{Number}, x) = Distributions.normcdf(P.μ, sqrt(P.Σ), x)
 
 Base.:+(g::Gaussian, vec) = Gaussian(g.μ + vec, g.Σ)
 Base.:+(vec, g::Gaussian) = g + vec
@@ -127,5 +127,7 @@ function conditional(P::Gaussian, A, B, xB)
     Z = P.Σ[A,B]*inv(P.Σ[B,B]) 
     Gaussian(P.μ[A] + Z*(xB - P.μ[B]), P.Σ[A,A] - Z*P.Σ[B,A])
 end    
+
+include("bivariate.jl")
 
 end # module

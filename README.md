@@ -8,3 +8,5 @@ The *raison d’être* of GaussianDistributions is that the type hierarchy layed
 
 This package contains enough functionality such that `Gaussian`s can be useful as Gaussian state variable for example in a Kalman
 filter.
+
+It also provides cumulative distributions functions (`cdf`) for bivariate Normal distributions using an approximation (valid unless the correlation `ρ` is very strong and `x ≈ y*sign(ρ)`.)
