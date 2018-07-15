@@ -35,6 +35,10 @@ phibackgauss(s, x, y, rho) = 0.5*sqrt(1-rho^2)*phiback(x, y, (sqrt(1-rho^2))*0.5
 
 
 function Phi(x, y, ρ) 
+    if ρ == 1
+        return Phi(min(x, y)) 
+    end
+
     if x == Inf || y == Inf
         Phi(min(x, y))
     elseif x == -Inf || y == -Inf
