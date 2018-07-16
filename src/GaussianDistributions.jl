@@ -70,8 +70,8 @@ sqmahal(P::Gaussian, x) = norm_sqr(whiten(P.Σ, x - P.μ))
 rand(P::Gaussian) = P.μ + chol(P.Σ)'*randn(typeof(P.μ))
 rand(P::Gaussian{Vector{T}}) where T =
     P.μ + chol(P.Σ)'*randn(T, length(P.μ))
-rand(RNG, P::Gaussian) = P.μ + chol(P.Σ)'*randn(RNG, typeof(P.μ))
-rand(RNG, P::Gaussian{Vector{T}}) where T =
+rand(RNG::AbstractRNG, P::Gaussian) = P.μ + chol(P.Σ)'*randn(RNG, typeof(P.μ))
+rand(RNG::AbstractRNG, P::Gaussian{Vector{T}}) where T =
     P.μ + chol(P.Σ)'*randn(RNG, T, length(P.μ))
 
 logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi))/2    
@@ -83,7 +83,7 @@ Base.:+(vec, g::Gaussian) = g + vec
 Base.:-(g::Gaussian, vec) = g + (-vec)
 Base.:*(M, g::Gaussian) = Gaussian(M * g.μ, M * g.Σ * M')
 
-function rand(RNG, P::Gaussian{T}, dims) where {T}
+function rand_scalar(RNG::AbstractRNG, P::Gaussian{T}, dims) where {T}
     X = zeros(T, dims)
     for i in 1:length(X)
         X[i] = rand(RNG, P)
@@ -91,15 +91,20 @@ function rand(RNG, P::Gaussian{T}, dims) where {T}
     X
 end
 
-function rand(RNG, P::Gaussian{Vector{T}}, dims) where {T}
+function rand_vector(RNG::AbstractRNG, P::Gaussian{Vector{T}}, dims::Union{Integer, NTuple}) where {T}
     X = zeros(T, dim(P), dims...)
     for i in 1:prod(dims)
         X[:, i] = rand(RNG, P)
     end
     X
 end
+rand(RNG::AbstractRNG, P::Gaussian, dim::Integer) = rand_scalar(RNG, P, dim)
+rand(RNG::AbstractRNG, P::Gaussian, dims::Tuple{Vararg{Int64,N}} where N) = rand_scalar(RNG, P, dims)
 
-rand(P::Gaussian, dims) = rand(Base.GLOBAL_RNG, P, dims)
+rand(RNG::AbstractRNG, P::Gaussian{Vector{T}}, dim::Integer) where {T} = rand_vector(RNG, P, dim)
+rand(RNG::AbstractRNG, P::Gaussian{Vector{T}}, dims::Tuple{Vararg{Int64,N}} where N) where {T} = rand_vector(RNG, P, dims)
+rand(P::Gaussian, dims::Tuple{Vararg{Int64,N}} where N) = rand(Base.GLOBAL_RNG, P, dims)
+rand(P::Gaussian, dim::Integer) = rand(Base.GLOBAL_RNG, P, dim)
 
 """
     logpdfnormal(x, Σ) 
