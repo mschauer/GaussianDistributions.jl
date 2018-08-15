@@ -6,7 +6,7 @@ using LinearAlgebra, Random, Statistics
 using Distributions
 using LinearAlgebra: norm_sqr
 
-import Random: rand
+import Random: rand, GLOBAL_RNG
 import Statistics: mean, cov, var
 import Distributions: pdf, logpdf, sqmahal, cdf, quantile
 import LinearAlgebra: cholesky
@@ -109,8 +109,8 @@ rand(RNG::AbstractRNG, P::Gaussian, dims::Tuple{Vararg{Int64,N}} where N) = rand
 
 rand(RNG::AbstractRNG, P::Gaussian{Vector{T}}, dim::Integer) where {T} = rand_vector(RNG, P, dim)
 rand(RNG::AbstractRNG, P::Gaussian{Vector{T}}, dims::Tuple{Vararg{Int64,N}} where N) where {T} = rand_vector(RNG, P, dims)
-rand(P::Gaussian, dims::Tuple{Vararg{Int64,N}} where N) = rand(Base.GLOBAL_RNG, P, dims)
-rand(P::Gaussian, dim::Integer) = rand(Base.GLOBAL_RNG, P, dim)
+rand(P::Gaussian, dims::Tuple{Vararg{Int64,N}} where N) = rand(GLOBAL_RNG, P, dims)
+rand(P::Gaussian, dim::Integer) = rand(GLOBAL_RNG, P, dim)
 
 """
     logpdfnormal(x, Σ) 

@@ -1,3 +1,5 @@
+import Random
+using Random: MersenneTwister
 using Distributions
 using Test
 using StaticArrays
@@ -23,11 +25,11 @@ p = pdf(Normal(μ, √Σ), x)
 @test pdf(Gaussian((@SVector [μ]), @SMatrix [Σ]), @SVector [x]) ≈ p
 
 for d in 1: 3
-    μ = rand(d)
-    x = rand(d)
-    σ = tril(rand(d,d))
-    Σ = σ*σ'
-    p = pdf(MvNormal(μ, Σ), x)
+    local μ = rand(d)
+    local x = rand(d)
+    local σ = tril(rand(d,d))
+    local Σ = σ*σ'
+    local p = pdf(MvNormal(μ, Σ), x)
 
     @test pdf(Gaussian(μ, Σ), x) ≈ p
     @test pdf(Gaussian(μ, PSD(σ)), x) ≈ p
@@ -39,24 +41,24 @@ for d in 1: 3
     local μ = rand(d)
     local x = rand(d)
     local σ = rand()
-    Σ = Matrix(1.0I, d, d).*σ^2
-    p = pdf(MvNormal(μ, Σ), x)
+    local Σ = Matrix(1.0I, d, d).*σ^2
+    local p = pdf(MvNormal(μ, Σ), x)
 
     @test pdf(Gaussian(μ, σ^2*I), x) ≈ p
     @test pdf(Gaussian(SVector{d}(μ), SDiagonal(σ^2*ones(SVector{d}))), x) ≈ p
     @test pdf(Gaussian(SVector{d}(μ), SMatrix{d,d}(Σ)), x) ≈ p
 end
 
-@test rand(Base.Random.GLOBAL_RNG, Gaussian(1.0, 0.0)) == 1.0
+@test rand(Random.GLOBAL_RNG, Gaussian(1.0, 0.0)) == 1.0
 @test mean(rand(MersenneTwister(1), Gaussian([1., 2], Matrix(1.0I, 2, 2)), 100000)) ≈ 1.5 atol=0.02
 
 @test rand(Gaussian(1.0,0.0)) == 1.0
-srand(5)
+Random.seed!(5)
 x = randn()
-srand(5)
+Random.seed!(5)
 @test rand(Gaussian(1.0,2.0)) == 1.0 .+ sqrt(2)*x
 
-srand(5)
+Random.seed!(5)
 @test rand(Gaussian(1.0,2.0), (1,)) == [1.0 + sqrt(2)*x]
 
 g = Gaussian([1,2], Matrix(1.0I, 2, 2))
