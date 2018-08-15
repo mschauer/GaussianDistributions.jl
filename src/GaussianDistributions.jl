@@ -23,8 +23,7 @@ struct PSD{T}
     σ::T
     PSD(σ::T) where {T} = istril(σ) ? new{T}(σ) : throw(ArgumentError("Argument not lower triangular"))
 end
-Base.chol(P::PSD) = P.σ' 
-#cholesky(P::PSD) = (U=P.σ',)   # using a named tuple for now. FIXME? 
+cholesky(P::PSD) = (U=P.σ',)   # using a named tuple for now. FIXME? Also: TESTME
 
 """
 Sum of the log of the diagonal elements. Second argument `d` is used
@@ -67,8 +66,8 @@ Base.convert(::Type{Gaussian{T, S}}, g::Gaussian) where {T, S} =
      
 dim(P::Gaussian) = length(P.μ)
 whiten(Σ::PSD, z) = Σ.σ\z
-#whiten(Σ, z) = cholesky(Σ).U'\z
-whiten(Σ, z) = chol(Σ)'\z
+whiten(Σ, z) = cholesky(Σ).U'\z
+whiten(Σ::Number, z) = sqrt(Σ)\z
 whiten(Σ::UniformScaling, z) = z/sqrt(Σ.λ)
 sqmahal(P::Gaussian, x) = norm_sqr(whiten(P.Σ, x .- P.μ))
 
