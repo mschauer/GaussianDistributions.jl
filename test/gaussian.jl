@@ -1,6 +1,7 @@
 using Distributions
-using Base.Test
+using Test
 using StaticArrays
+using LinearAlgebra
 
 
 μ = rand()
@@ -10,7 +11,7 @@ x = rand()
 
 # Check type conversions
 GFloat = Gaussian{Vector{Float64}, Matrix{Float64}}
-v = GFloat[Gaussian([1.0], eye(2)),
+v = GFloat[Gaussian([1.0], Matrix(1.0I, 2, 2)),
            Gaussian(SVector(1.0), @SMatrix [1.0 0.0; 0.0 1.0])]
 @test mean.(v) == [[1.0], [1.0]]
 
@@ -35,10 +36,10 @@ for d in 1: 3
 end
 
 for d in 1: 3
-    μ = rand(d)
-    x = rand(d)
-    σ = rand()
-    Σ = eye(d)*σ^2
+    local μ = rand(d)
+    local x = rand(d)
+    local σ = rand()
+    Σ = Matrix(1.0I, d, d).*σ^2
     p = pdf(MvNormal(μ, Σ), x)
 
     @test pdf(Gaussian(μ, σ^2*I), x) ≈ p
@@ -47,18 +48,18 @@ for d in 1: 3
 end
 
 @test rand(Base.Random.GLOBAL_RNG, Gaussian(1.0, 0.0)) == 1.0
-@test mean(rand(MersenneTwister(1), Gaussian([1., 2], eye(2)), 100000)) ≈ 1.5 atol=0.02
+@test mean(rand(MersenneTwister(1), Gaussian([1., 2], Matrix(1.0I, 2, 2)), 100000)) ≈ 1.5 atol=0.02
 
 @test rand(Gaussian(1.0,0.0)) == 1.0
 srand(5)
 x = randn()
 srand(5)
-@test rand(Gaussian(1.0,2.0)) == 1.0 + sqrt(2)*x
+@test rand(Gaussian(1.0,2.0)) == 1.0 .+ sqrt(2)*x
 
 srand(5)
 @test rand(Gaussian(1.0,2.0), (1,)) == [1.0 + sqrt(2)*x]
 
-g = Gaussian([1,2], eye(2))
+g = Gaussian([1,2], Matrix(1.0I, 2, 2))
 @test mean(g + 10) == [11,12]
 @test g - 10 + 10 == g
 @test mean(g + [10, 20]) == [11,22]

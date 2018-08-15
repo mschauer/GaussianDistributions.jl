@@ -1,5 +1,5 @@
 using GaussianDistributions
-using Base.Test
+using Test
 
 include("gaussian.jl")
 include("bivariate.jl")
