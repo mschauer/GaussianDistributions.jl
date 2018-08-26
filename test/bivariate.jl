@@ -64,7 +64,7 @@ data = [
     -0.5410899301286479 1.6557106424466033 0.9509727243269613 0.29422279933864653
 ]
 for i in 1:size(data, 1)
-    x, y, ρ, pr = data[i, :]
+    local x, y, ρ, pr = data[i, :]
     @test GaussianDistributions.Phi(x, y, ρ) ≈ pr
 end
 

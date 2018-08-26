@@ -2,12 +2,15 @@ __precompile__()
 module GaussianDistributions
 
 # Gaussian
+using LinearAlgebra, Random, Statistics
 using Distributions
-using Base.LinAlg: norm_sqr
+using LinearAlgebra: norm_sqr
 
-import Base: rand, mean, cov, var
+import Random: rand, GLOBAL_RNG
+import Statistics: mean, cov, var
 import Distributions: pdf, logpdf, sqmahal, cdf, quantile
-import Base: chol, size
+import LinearAlgebra: cholesky
+import Base: size
 
 export PSD, Gaussian
 
@@ -20,7 +23,7 @@ struct PSD{T}
     σ::T
     PSD(σ::T) where {T} = istril(σ) ? new{T}(σ) : throw(ArgumentError("Argument not lower triangular"))
 end
-chol(P::PSD) = P.σ' 
+cholesky(P::PSD) = (U=P.σ',)   # using a named tuple for now. FIXME? Also: TESTME
 
 """
 Sum of the log of the diagonal elements. Second argument `d` is used
@@ -63,22 +66,25 @@ Base.convert(::Type{Gaussian{T, S}}, g::Gaussian) where {T, S} =
      
 dim(P::Gaussian) = length(P.μ)
 whiten(Σ::PSD, z) = Σ.σ\z
-whiten(Σ, z) = chol(Σ)'\z
+whiten(Σ, z) = cholesky(Σ).U'\z
+whiten(Σ::Number, z) = sqrt(Σ)\z
 whiten(Σ::UniformScaling, z) = z/sqrt(Σ.λ)
-sqmahal(P::Gaussian, x) = norm_sqr(whiten(P.Σ, x - P.μ))
+sqmahal(P::Gaussian, x) = norm_sqr(whiten(P.Σ, x .- P.μ))
 
-rand(P::Gaussian) = P.μ + chol(P.Σ)'*randn(typeof(P.μ))
+rand(P::Gaussian) = P.μ + cholesky(P.Σ).U'*randn(typeof(P.μ))
 rand(P::Gaussian{Vector{T}}) where T =
-    P.μ + chol(P.Σ)'*randn(T, length(P.μ))
-rand(RNG::AbstractRNG, P::Gaussian) = P.μ + chol(P.Σ)'*randn(RNG, typeof(P.μ))
+    P.μ + cholesky(P.Σ).U'*randn(T, length(P.μ))
+rand(P::Gaussian{<:Number}) = P.μ + randn(typeof(P.μ)) * sqrt(P.Σ)
+rand(RNG::AbstractRNG, P::Gaussian) = P.μ + cholesky(P.Σ).U'*randn(RNG, typeof(P.μ))
 rand(RNG::AbstractRNG, P::Gaussian{Vector{T}}) where T =
-    P.μ + chol(P.Σ)'*randn(RNG, T, length(P.μ))
+    P.μ + cholesky(P.Σ).U'*randn(RNG, T, length(P.μ))
+rand(RNG::AbstractRNG, P::Gaussian{<:Number}) = P.μ + randn(RNG, typeof(P.μ)) * sqrt(P.Σ)
 
 logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi))/2    
 pdf(P::Gaussian, x) = exp(logpdf(P::Gaussian, x))
 cdf(P::Gaussian{Number}, x) = Distributions.normcdf(P.μ, sqrt(P.Σ), x)
 
-Base.:+(g::Gaussian, vec) = Gaussian(g.μ + vec, g.Σ)
+Base.:+(g::Gaussian, vec) = Gaussian(g.μ .+ vec, g.Σ)
 Base.:+(vec, g::Gaussian) = g + vec
 Base.:-(g::Gaussian, vec) = g + (-vec)
 Base.:*(M, g::Gaussian) = Gaussian(M * g.μ, M * g.Σ * M')
@@ -103,8 +109,8 @@ rand(RNG::AbstractRNG, P::Gaussian, dims::Tuple{Vararg{Int64,N}} where N) = rand
 
 rand(RNG::AbstractRNG, P::Gaussian{Vector{T}}, dim::Integer) where {T} = rand_vector(RNG, P, dim)
 rand(RNG::AbstractRNG, P::Gaussian{Vector{T}}, dims::Tuple{Vararg{Int64,N}} where N) where {T} = rand_vector(RNG, P, dims)
-rand(P::Gaussian, dims::Tuple{Vararg{Int64,N}} where N) = rand(Base.GLOBAL_RNG, P, dims)
-rand(P::Gaussian, dim::Integer) = rand(Base.GLOBAL_RNG, P, dim)
+rand(P::Gaussian, dims::Tuple{Vararg{Int64,N}} where N) = rand(GLOBAL_RNG, P, dims)
+rand(P::Gaussian, dim::Integer) = rand(GLOBAL_RNG, P, dim)
 
 """
     logpdfnormal(x, Σ) 
@@ -113,7 +119,7 @@ Logarithm of the probability density function of centered Gaussian with covarian
 """
 function logpdfnormal(x, Σ) 
 
-    S = chol(_symmetric(Σ))'
+    S = cholesky(_symmetric(Σ)).U'
 
     d = length(x)
      -((norm(S\x))^2 + 2sumlogdiag(S,d) + d*log(2pi))/2
