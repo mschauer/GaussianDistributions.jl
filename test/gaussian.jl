@@ -18,6 +18,11 @@ v = GFloat[Gaussian([1.0], Matrix(1.0I, 2, 2)),
            Gaussian(SVector(1.0), @SMatrix [1.0 0.0; 0.0 1.0])]
 @test mean.(v) == [[1.0], [1.0]]
 
+G = Gaussian([1.0], Matrix(1.0I, 2, 2))
+m, K = G
+@test m === mean(G)
+@test K === cov(G)
+
 p = pdf(Normal(μ, √Σ), x)
 @test pdf(Gaussian(μ, Σ), x) ≈ p
 @test pdf(Gaussian(μ, Σ*I), x) ≈ p

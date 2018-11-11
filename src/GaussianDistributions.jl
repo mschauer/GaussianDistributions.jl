@@ -10,7 +10,8 @@ import Random: rand, GLOBAL_RNG
 import Statistics: mean, cov, var
 import Distributions: pdf, logpdf, sqmahal, cdf, quantile
 import LinearAlgebra: cholesky
-import Base: size
+import Base: size, iterate, length
+
 
 export PSD, Gaussian
 
@@ -56,6 +57,11 @@ struct Gaussian{T,S}
     Σ::S
     Gaussian(μ::T, Σ::S) where {T,S} = new{T,S}(μ, Σ)
 end
+
+iterate(P::Gaussian) = P.μ, true
+iterate(P::Gaussian, s) = s ? (P.Σ, false) : nothing
+length(P::Gaussian) = 2
+
 Base.:(==)(g1::Gaussian, g2::Gaussian) = g1.μ == g2.μ && g1.Σ == g2.Σ
 Gaussian() = Gaussian(0.0, 1.0)
 mean(P::Gaussian) = P.μ
@@ -63,7 +69,7 @@ cov(P::Gaussian) = P.Σ
 var(P::Gaussian{<:Real}) = P.Σ
 Base.convert(::Type{Gaussian{T, S}}, g::Gaussian) where {T, S} =
     Gaussian(convert(T, g.μ), convert(S, g.Σ))
-     
+
 dim(P::Gaussian) = length(P.μ)
 whiten(Σ::PSD, z) = Σ.σ\z
 whiten(Σ, z) = cholesky(Σ).U'\z
@@ -77,7 +83,7 @@ rand(RNG::AbstractRNG, P::Gaussian{Vector{T}}) where T =
     P.μ + cholesky(P.Σ).U'*randn(RNG, T, length(P.μ))
 rand(RNG::AbstractRNG, P::Gaussian{<:Number}) = P.μ + randn(RNG, typeof(one(P.μ))) * sqrt(P.Σ)
 
-logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi))/2    
+logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi))/2
 pdf(P::Gaussian, x) = exp(logpdf(P::Gaussian, x))
 cdf(P::Gaussian{Number}, x) = Distributions.normcdf(P.μ, sqrt(P.Σ), x)
 
@@ -110,31 +116,31 @@ rand(P::Gaussian, dims::Tuple{Vararg{Int64,N}} where N) = rand(GLOBAL_RNG, P, di
 rand(P::Gaussian, dim::Integer) = rand(GLOBAL_RNG, P, dim)
 
 """
-    logpdfnormal(x, Σ) 
+    logpdfnormal(x, Σ)
 
 Logarithm of the probability density function of centered Gaussian with covariance Σ
 """
-function logpdfnormal(x, Σ) 
+function logpdfnormal(x, Σ)
 
     S = cholesky(_symmetric(Σ)).U'
 
     d = length(x)
      -((norm(S\x))^2 + 2sumlogdiag(S,d) + d*log(2pi))/2
 end
-function logpdfnormal(x::Float64, Σ) 
+function logpdfnormal(x::Float64, Σ)
      -(x^2/Σ + log(Σ) + log(2pi))/2
 end
 
 """
-    conditional(P::Gaussian, A, B, xB)  
+    conditional(P::Gaussian, A, B, xB)
 
-Conditional distribution of `X[i for i in A]` given 
+Conditional distribution of `X[i for i in A]` given
 `X[i for i in B] == xB` if ``X ~ P``.
 """
 function conditional(P::Gaussian, A, B, xB)
-    Z = P.Σ[A,B]*inv(P.Σ[B,B]) 
+    Z = P.Σ[A,B]*inv(P.Σ[B,B])
     Gaussian(P.μ[A] + Z*(xB - P.μ[B]), P.Σ[A,A] - Z*P.Σ[B,A])
-end    
+end
 
 include("bivariate.jl")
 
