@@ -55,6 +55,7 @@ Implementation details: On `Σ` the functions `logdet`, `whiten` and `unwhiten`
 struct Gaussian{T,S}
     μ::T
     Σ::S
+    Gaussian{T,S}(μ, Σ) where {T,S} = new(μ, Σ)
     Gaussian(μ::T, Σ::S) where {T,S} = new{T,S}(μ, Σ)
 end
 
@@ -74,14 +75,20 @@ dim(P::Gaussian) = length(P.μ)
 whiten(Σ::PSD, z) = Σ.σ\z
 whiten(Σ, z) = cholesky(Σ).U'\z
 whiten(Σ::Number, z) = sqrt(Σ)\z
-whiten(Σ::UniformScaling, z) = z/sqrt(Σ.λ)
+whiten(Σ::UniformScaling, z) = sqrt(Σ.λ)\z
+
+unwhiten(Σ::PSD, z) = Σ.σ*z
+unwhiten(Σ, z) = cholesky(Σ).U'*z
+unwhiten(Σ::Number, z) = sqrt(Σ)*z
+unwhiten(Σ::UniformScaling, z) = sqrt(Σ.λ)*z
+
 sqmahal(P::Gaussian, x) = norm_sqr(whiten(P.Σ, x .- P.μ))
 
 rand(P::Gaussian) = rand(GLOBAL_RNG, P)
-rand(RNG::AbstractRNG, P::Gaussian) = P.μ + cholesky(P.Σ).U'*randn(RNG, typeof(P.μ))
+rand(RNG::AbstractRNG, P::Gaussian) = P.μ + unwhiten(P.Σ, randn(RNG, typeof(P.μ)))
 rand(RNG::AbstractRNG, P::Gaussian{Vector{T}}) where T =
-    P.μ + cholesky(P.Σ).U'*randn(RNG, T, length(P.μ))
-rand(RNG::AbstractRNG, P::Gaussian{<:Number}) = P.μ + randn(RNG, typeof(one(P.μ))) * sqrt(P.Σ)
+    P.μ + unwhiten(P.Σ, randn(RNG, T, length(P.μ)))
+rand(RNG::AbstractRNG, P::Gaussian{<:Number}) = P.μ + sqrt(P.Σ)*randn(RNG, typeof(one(P.μ))) 
 
 logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi))/2
 pdf(P::Gaussian, x) = exp(logpdf(P::Gaussian, x))
