@@ -1,4 +1,3 @@
-__precompile__()
 module GaussianDistributions
 
 # Gaussian
@@ -88,7 +87,7 @@ rand(P::Gaussian) = rand(GLOBAL_RNG, P)
 rand(RNG::AbstractRNG, P::Gaussian) = P.μ + unwhiten(P.Σ, randn(RNG, typeof(P.μ)))
 rand(RNG::AbstractRNG, P::Gaussian{Vector{T}}) where T =
     P.μ + unwhiten(P.Σ, randn(RNG, T, length(P.μ)))
-rand(RNG::AbstractRNG, P::Gaussian{<:Number}) = P.μ + sqrt(P.Σ)*randn(RNG, typeof(one(P.μ))) 
+rand(RNG::AbstractRNG, P::Gaussian{<:Number}) = P.μ + sqrt(P.Σ)*randn(RNG, typeof(one(P.μ)))
 
 logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi))/2
 pdf(P::Gaussian, x) = exp(logpdf(P::Gaussian, x))
