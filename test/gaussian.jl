@@ -74,3 +74,7 @@ g = Gaussian([1,2], Matrix(1.0I, 2, 2))
 @test mean(g + [10, 20]) == [11,22]
 m = [1.0 2.0; 0.0 2.0]
 @test cov(m * g) == m * m'
+
+using GaussianDistributions: ⋆
+@test cov((m*g)⋆g) == cov(m*g) + cov(g)
+@test mean((m*g)⋆g) == mean(m*g) + mean(g)

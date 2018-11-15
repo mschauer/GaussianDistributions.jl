@@ -97,6 +97,10 @@ Base.:+(g::Gaussian, vec) = Gaussian(g.μ .+ vec, g.Σ)
 Base.:+(vec, g::Gaussian) = g + vec
 Base.:-(g::Gaussian, vec) = g + (-vec)
 Base.:*(M, g::Gaussian) = Gaussian(M * g.μ, M * g.Σ * M')
+⋆(g1::Gaussian, g2::Gaussian) = Gaussian(g1.μ + g2.μ, g1.Σ + g2.Σ)
+const independent_sum = ⋆
+
+
 
 function rand_scalar(RNG::AbstractRNG, P::Gaussian{T}, dims) where {T}
     X = zeros(T, dims)
