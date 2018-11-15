@@ -93,7 +93,7 @@ logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi
 pdf(P::Gaussian, x) = exp(logpdf(P::Gaussian, x))
 cdf(P::Gaussian{Number}, x) = Distributions.normcdf(P.μ, sqrt(P.Σ), x)
 
-Base.:+(g::Gaussian, vec) = Gaussian(g.μ .+ vec, g.Σ)
+Base.:+(g::Gaussian, vec) = Gaussian(g.μ + vec, g.Σ)
 Base.:+(vec, g::Gaussian) = g + vec
 Base.:-(g::Gaussian, vec) = g + (-vec)
 Base.:*(M, g::Gaussian) = Gaussian(M * g.μ, M * g.Σ * M')
