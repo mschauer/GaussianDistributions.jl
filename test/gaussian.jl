@@ -75,6 +75,9 @@ g = Gaussian([1,2], Matrix(1.0I, 2, 2))
 m = [1.0 2.0; 0.0 2.0]
 @test cov(m * g) == m * m'
 
-using GaussianDistributions: ⋆
-@test cov((m*g)⋆g) == cov(m*g) + cov(g)
-@test mean((m*g)⋆g) == mean(m*g) + mean(g)
+using GaussianDistributions: ⊕
+@test cov(m*g ⊕ g) == cov(m*g) + cov(g)
+@test mean(m*g ⊕ g) == mean(m*g) + mean(g)
+
+@test cov(g ⊕ m*mean(g)) == cov(g)
+@test mean(m*mean(g) ⊕ g) == mean(m*g) + mean(g)
