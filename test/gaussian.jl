@@ -81,3 +81,7 @@ using GaussianDistributions: ⊕
 
 @test cov(g ⊕ m*mean(g)) == cov(g)
 @test mean(m*mean(g) ⊕ g) == mean(m*g) + mean(g)
+
+g2 = Gaussian(SVector(1.000001, 2.0), [1.00001 0.0; 0.0 0.999999])
+@test !(g ≈ g2)
+@test g ≈ g2 rtol=0.0001

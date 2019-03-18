@@ -63,6 +63,8 @@ iterate(P::Gaussian, s) = s ? (P.Σ, false) : nothing
 length(P::Gaussian) = 2
 
 Base.:(==)(g1::Gaussian, g2::Gaussian) = g1.μ == g2.μ && g1.Σ == g2.Σ
+Base.isapprox(g1::Gaussian, g2::Gaussian; kwargs...) =
+    isapprox(g1.μ, g2.μ; kwargs...) && isapprox(g1.Σ, g2.Σ; kwargs...)
 Gaussian() = Gaussian(0.0, 1.0)
 mean(P::Gaussian) = P.μ
 cov(P::Gaussian) = P.Σ
