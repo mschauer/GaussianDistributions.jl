@@ -26,16 +26,16 @@ m, K = G
 p = pdf(Normal(μ, √Σ), x)
 @test pdf(Gaussian(μ, Σ), x) ≈ p
 @test pdf(Gaussian(μ, Σ*I), x) ≈ p
-@test pdf(Gaussian([μ], [σ]*[σ]'), x) ≈ p
+@test pdf(Gaussian([μ], [σ]*[σ]'), [x]) ≈ p
 
 @test pdf(Gaussian((@SVector [μ]), @SMatrix [Σ]), @SVector [x]) ≈ p
 
-for d in 1: 3
-    local μ = rand(d)
-    local x = rand(d)
-    local σ = tril(rand(d,d))
-    local Σ = σ*σ'
-    local p = pdf(MvNormal(μ, Σ), x)
+for d in 1:3
+    μ = rand(d)
+    x = rand(d)
+    σ = tril(rand(d,d))
+    Σ = σ*σ'
+    p = pdf(MvNormal(μ, Σ), x)
 
     @test pdf(Gaussian(μ, Σ), x) ≈ p
     @test pdf(Gaussian(μ, PSD(σ)), x) ≈ p
@@ -69,8 +69,8 @@ Random.seed!(5)
 @test rand(Gaussian(1.0,2.0), (1,)) == [1.0 + sqrt(2)*x]
 
 g = Gaussian([1,2], Matrix(1.0I, 2, 2))
-@test mean(g + 10) == [11,12]
-@test g - 10 + 10 == g
+@test mean(g + [10,10]) == [11,12]
+@test (g - [10,10]) + [10,10] == g
 @test mean(g + [10, 20]) == [11,22]
 m = [1.0 2.0; 0.0 2.0]
 @test cov(m * g) == m * m'
