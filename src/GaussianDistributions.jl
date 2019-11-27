@@ -83,7 +83,7 @@ unwhiten(Σ, z) = cholesky(Σ).U'*z
 unwhiten(Σ::Number, z) = sqrt(Σ)*z
 unwhiten(Σ::UniformScaling, z) = sqrt(Σ.λ)*z
 
-sqmahal(P::Gaussian, x) = norm_sqr(whiten(P.Σ, x .- P.μ))
+sqmahal(P::Gaussian, x) = norm_sqr(whiten(P.Σ, x - P.μ))
 
 rand(P::Gaussian) = rand(GLOBAL_RNG, P)
 rand(RNG::AbstractRNG, P::Gaussian) = P.μ + unwhiten(P.Σ, randn(RNG, typeof(P.μ)))
@@ -95,7 +95,7 @@ logpdf(P::Gaussian, x) = -(sqmahal(P,x) + _logdet(P.Σ, dim(P)) + dim(P)*log(2pi
 pdf(P::Gaussian, x) = exp(logpdf(P::Gaussian, x))
 cdf(P::Gaussian{Number}, x) = Distributions.normcdf(P.μ, sqrt(P.Σ), x)
 
-Base.:+(g::Gaussian, vec) = Gaussian(g.μ .+ vec, g.Σ)
+Base.:+(g::Gaussian, vec) = Gaussian(g.μ + vec, g.Σ)
 Base.:+(vec, g::Gaussian) = g + vec
 Base.:-(g::Gaussian, vec) = g + (-vec)
 Base.:*(M, g::Gaussian) = Gaussian(M * g.μ, M * g.Σ * M')

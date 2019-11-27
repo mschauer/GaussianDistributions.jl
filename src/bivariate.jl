@@ -8,7 +8,7 @@ Bivariate standard normal distribution with correlation ρ
 struct BiNormal
     ρ::Float64
     ρ̄::Float64
-    
+
     BiNormal(ρ) = new(ρ, sqrt(1-ρ^2))
 end
 rand(P::BiNormal) = let x = randn(); x, P.ρ*x + P.ρ̄*randn(); end
@@ -26,7 +26,7 @@ phi(x, y, rho) =  1/(2*pi*sqrt(1-rho^2))*exp(-0.5*(x^2 + y^2 - 2x*y*rho)/(1-rho^
 # transformed to the interval [-1,1]
 phigauss(s, x, y, rho) = (rho)/2 * phi(x, y, 0.5*rho*(s + 1))
 # substitute r = sqrt(1-rho^2) for backward integration
-function phiback(x, y, r) 
+function phiback(x, y, r)
     r̄ = sqrt(1-r^2)
     (1/(2pi*r̄))*exp(-0.5*(x^2 + y^2 - 2x*y*r̄)/r^2)
 end
@@ -34,9 +34,9 @@ end
 phibackgauss(s, x, y, rho) = 0.5*sqrt(1-rho^2)*phiback(x, y, (sqrt(1-rho^2))*0.5*(s + 1))
 
 
-function Phi(x, y, ρ) 
+function Phi(x, y, ρ)
     if ρ == 1
-        return Phi(min(x, y)) 
+        return Phi(min(x, y))
     end
 
     if x == Inf || y == Inf
@@ -55,18 +55,17 @@ end
 pdf(P::BiNormal, x) = 1/(2*pi*P.ρ̄)*exp(-0.5*(x[1]^2 + x[2]^2 - 2x[1]*x[2]*P.ρ)/(1-P.ρ^2))
 cdf(P::BiNormal, x) = Phi(x[1], x[2], P.ρ)
 
-function cdf(P, z)
+function cdf(P::Gaussian, z)
     if dim(P) == 1
         Distributions.normcdf(P.μ[], sqrt(P.Σ[]), z[])
     elseif dim(P) == 2
         σ1 = sqrt(P.Σ[1,1])
         σ2 = sqrt(P.Σ[2,2])
-        ρ = P.Σ[1,2]/(σ1*σ2) 
+        ρ = P.Σ[1,2]/(σ1*σ2)
         x = (z[1] - P.μ[1])/σ1
         y = (z[2] - P.μ[2])/σ2
         Phi(x, y, ρ)
-    else 
+    else
         error("cdf only for 1 and 2 dimensional Gaussians")
     end
 end
-    
