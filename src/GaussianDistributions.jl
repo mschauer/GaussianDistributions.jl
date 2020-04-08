@@ -62,6 +62,9 @@ iterate(P::Gaussian) = P.μ, true
 iterate(P::Gaussian, s) = s ? (P.Σ, false) : nothing
 length(P::Gaussian) = 2
 
+pair(u) = u[1], u[2]
+pair(p::Gaussian) = p.μ, p.Σ
+
 Base.:(==)(g1::Gaussian, g2::Gaussian) = g1.μ == g2.μ && g1.Σ == g2.Σ
 Base.isapprox(g1::Gaussian, g2::Gaussian; kwargs...) =
     isapprox(g1.μ, g2.μ; kwargs...) && isapprox(g1.Σ, g2.Σ; kwargs...)
@@ -154,6 +157,30 @@ Conditional distribution of `X[i for i in A]` given
 function conditional(P::Gaussian, A, B, xB)
     Z = P.Σ[A,B]*inv(P.Σ[B,B])
     Gaussian(P.μ[A] + Z*(xB - P.μ[B]), P.Σ[A,A] - Z*P.Σ[B,A])
+end
+
+"""
+    correct(u, v, H) = u, yres, S
+
+Joseph form correction step of a Kalman filter with `u = Gaussian(x, P)` state
+and `v = Gaussian(y, R)` the observation with uncertainty `R`.
+`H` is the observation operator. Returns corrected/conditional
+distribution u, the residual and the innovation covariance.
+
+See https://en.wikipedia.org/wiki/Kalman_filter#Update.
+"""
+function correct(u, v, H)
+    x, Ppred = pair(u)
+    y, R = pair(v)
+    yres = y - H*x # innovation residual
+
+    S = (H*Ppred*H' + R) # innovation covariance
+
+    K = Ppred*H'/S # Kalman gain
+    x = x + K*yres
+    P = (I - K*H)*Ppred*(I - K*H)' + K*R*K' #  Joseph form
+
+    (x, P), yres, S
 end
 
 include("bivariate.jl")
