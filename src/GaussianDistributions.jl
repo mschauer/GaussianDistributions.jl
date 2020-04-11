@@ -169,7 +169,7 @@ distribution u, the residual and the innovation covariance.
 
 See https://en.wikipedia.org/wiki/Kalman_filter#Update.
 """
-function correct(u, v, H)
+function correct(u::T, v, H) where {T}
     x, Ppred = pair(u)
     y, R = pair(v)
     yres = y - H*x # innovation residual
@@ -180,7 +180,7 @@ function correct(u, v, H)
     x = x + K*yres
     P = (I - K*H)*Ppred*(I - K*H)' + K*R*K' #  Joseph form
 
-    (x, P), yres, S
+    T(x, P), yres, S
 end
 
 include("bivariate.jl")
