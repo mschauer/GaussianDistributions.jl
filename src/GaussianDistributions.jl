@@ -6,7 +6,7 @@ using Distributions
 using LinearAlgebra: norm_sqr
 
 import Random: rand, GLOBAL_RNG
-import Statistics: mean, cov, var
+import Statistics: mean, cov, var, std
 import Distributions: pdf, logpdf, sqmahal, cdf, quantile
 import LinearAlgebra: cholesky
 import Base: size, iterate, length
@@ -71,7 +71,8 @@ Base.isapprox(g1::Gaussian, g2::Gaussian; kwargs...) =
 Gaussian() = Gaussian(0.0, 1.0)
 mean(P::Gaussian) = P.μ
 cov(P::Gaussian) = P.Σ
-var(P::Gaussian{<:Real}) = P.Σ
+var(P::Gaussian{<:Number}) = P.Σ
+std(P::Gaussian{<:Number}) = sqrt(var(P))
 Base.convert(::Type{Gaussian{T, S}}, g::Gaussian) where {T, S} =
     Gaussian(convert(T, g.μ), convert(S, g.Σ))
 
