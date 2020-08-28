@@ -58,6 +58,7 @@ end
 @test rand(Random.GLOBAL_RNG, Gaussian(1.0, 0.0)) == 1.0
 @test mean(rand(MersenneTwister(1), Gaussian([1., 2], Matrix(1.0I, 2, 2)), 100000)) ≈ 1.5 atol=0.02
 @test mean(rand(MersenneTwister(1), Gaussian(1.5u"m", 2.0u"m^2"), 100000)) ≈ 1.5u"m" atol=0.02u"m"
+@test std(Gaussian(1.0u"m", 4.0u"m^2")) == 2.0u"m"
 
 @test rand(Gaussian(1.0,0.0)) == 1.0
 Random.seed!(5)

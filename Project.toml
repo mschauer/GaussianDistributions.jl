@@ -1,7 +1,7 @@
 name = "GaussianDistributions"
 uuid = "43dcc890-d446-5863-8d1a-14597580bb8d"
 authors = ["Moritz Schauer <moritzschauer@web.de>", "Cédric St-Jean <cedric.stjean@gmail.com>"]
-version = "0.4.1"
+version = "0.5.0"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
