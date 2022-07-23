@@ -9,7 +9,7 @@ import Random: rand, GLOBAL_RNG
 import Statistics: mean, cov, var, std
 import Distributions: pdf, logpdf, sqmahal, cdf, quantile
 import LinearAlgebra: cholesky
-import Base: size, iterate, length
+import Base: size, iterate, length, copy, similar, copy!
 
 
 export PSD, Gaussian
@@ -61,6 +61,14 @@ end
 iterate(P::Gaussian) = P.μ, true
 iterate(P::Gaussian, s) = s ? (P.Σ, false) : nothing
 length(P::Gaussian) = 2
+copy(P::Gaussian) = Gaussian(copy(P.μ), copy(P.Σ))
+similar(P::Gaussian) = Gaussian(similar(P.μ), similar(P.Σ))
+function Base.copy!(dst::Gaussian, src::Gaussian)
+    copy!(dst.μ, src.μ)
+    copy!(dst.Σ, src.Σ)
+    return dst
+end
+
 
 pair(u) = u[1], u[2]
 pair(p::Gaussian) = p.μ, p.Σ
